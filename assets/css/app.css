@@ -1,0 +1,10 @@
+:root{--bg:#07111f;--panel:#0d1b2a;--text:#edf6ff;--muted:#91a7bc;--accent:#46d7c4;--danger:#ff6b6b;--warning:#ffc857;--border:rgba(255,255,255,.08)}
+html,body,[data-testid="stAppViewContainer"]{background:var(--bg);color:var(--text)}
+[data-testid="stSidebar"]{background:#06101c;border-right:1px solid var(--border)}
+.block-container{max-width:1250px;padding-top:2rem}
+.hero{padding:28px;border:1px solid var(--border);border-radius:24px;background:linear-gradient(135deg,#0f2740,#0b1928);margin-bottom:18px}
+.hero h1{font-size:42px;margin:0 0 8px}.hero p{color:var(--muted);font-size:17px}
+.metric-card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px}
+.metric-label{color:var(--muted);font-size:13px}.metric-value{font-size:30px;font-weight:700;margin:4px 0}.metric-caption{color:var(--muted);font-size:12px}
+.section-title{font-size:24px;font-weight:700;margin-top:24px}.section-subtitle{color:var(--muted);margin-bottom:12px}
+.low-bandwidth{background:#102a24;border:1px solid #215d4c;padding:10px 14px;border-radius:12px}

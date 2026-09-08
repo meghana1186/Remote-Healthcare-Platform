@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="110" viewBox="0 0 420 110">
+<rect width="420" height="110" rx="24" fill="#0d1b2a"/>
+<circle cx="55" cy="55" r="34" fill="#46d7c4"/>
+<path d="M55 80S30 65 30 48c0-15 18-19 25-5 7-14 25-10 25 5 0 17-25 32-25 32z" fill="#07111f"/>
+<text x="105" y="62" font-family="Arial" font-size="34" font-weight="700" fill="#edf6ff">RemoteCare AI</text>
+</svg>
