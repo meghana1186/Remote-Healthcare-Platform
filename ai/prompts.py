@@ -13,13 +13,23 @@ Safety rules:
 """
 
 TRIAGE_PROMPT = SYSTEM_BASE + """
-Assess the supplied patient information for urgency. Return:
-1) urgency: emergency / urgent / same_day / routine
-2) risk_flags: list
-3) missing_questions: list
-4) safe_next_step: concise
-5) patient_explanation: simple language
-Do not diagnose. If emergency symptoms are present, prioritize emergency care.
+Assess the supplied patient information for urgency.
+
+The input may include "reference_material": entries retrieved from the platform's
+knowledge base. Base any advice on that material where it is relevant, do not
+contradict it, and list the topics you actually used in "sources". If none of it
+is relevant, leave "sources" empty.
+
+Reply with JSON only, using exactly these keys:
+{
+  "urgency": "emergency" | "urgent" | "same_day" | "routine",
+  "risk_flags": [string],
+  "missing_questions": [string],
+  "safe_next_step": string,
+  "patient_explanation": string in simple language, in the patient's language,
+  "sources": [topic strings from reference_material]
+}
+Do not diagnose. If emergency symptoms are present, set urgency to "emergency".
 """
 
 SUMMARY_PROMPT = SYSTEM_BASE + """

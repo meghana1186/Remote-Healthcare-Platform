@@ -12,4 +12,6 @@ def run_triage(req: TriageRequest) -> TriageResponse:
         next_questions=result.get("follow_up_questions", []),
         clinician_handoff=result.get("clinician_handoff", ""),
         safety_flags=result.get("risk_flags", []),
+        source_count=len(result.get("retrieved", [])),
+        sources=result.get("sources", []),
     )

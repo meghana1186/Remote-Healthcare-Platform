@@ -16,13 +16,15 @@ class GroqAI:
         self.demo_mode = DEMO_MODE or not self.enabled
         self.client = Groq(api_key=GROQ_API_KEY, timeout=15.0) if self.enabled else None
 
-    def _chat(self, system: str, user: str) -> str:
+    def _chat(self, system: str, user: str, json_mode: bool = False) -> str:
         if not self.enabled:
             return self._demo(user)
+        kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
         response = self.client.chat.completions.create(
             model=GROQ_LLM_MODEL,
             messages=[{"role":"system","content":system},{"role":"user","content":user}],
-            temperature=0.2
+            temperature=0.2,
+            **kwargs,
         )
         return response.choices[0].message.content
 
@@ -52,7 +54,9 @@ class GroqAI:
         return parse_emergency_verdict(response.choices[0].message.content)
 
     def triage(self, case: dict) -> str:
-        return self._chat(TRIAGE_PROMPT, json.dumps(case, ensure_ascii=False, indent=2))
+        # JSON mode: ai/triage.py parses this reply, and free text used to fall through
+        # to the "needs clinician review" fallback every time.
+        return self._chat(TRIAGE_PROMPT, json.dumps(case, ensure_ascii=False, indent=2), json_mode=True)
 
     def summarize(self, case: dict) -> str:
         return self._chat(SUMMARY_PROMPT, json.dumps(case, ensure_ascii=False, indent=2))

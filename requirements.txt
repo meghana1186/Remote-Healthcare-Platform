@@ -15,3 +15,7 @@ passlib[bcrypt]>=1.7
 redis>=5
 celery>=5.4
 python-multipart>=0.0.9
+
+# Embeddings and vector store for knowledge retrieval (ai/rag.py)
+chromadb>=0.5
+sentence-transformers>=3.0

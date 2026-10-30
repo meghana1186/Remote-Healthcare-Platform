@@ -13,3 +13,4 @@ class TriageResponse(BaseModel):
     clinician_handoff: str
     safety_flags: list[str]
     source_count: int = 0
+    sources: list[str] = []
