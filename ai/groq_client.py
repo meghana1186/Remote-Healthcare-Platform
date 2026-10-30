@@ -2,7 +2,8 @@ from __future__ import annotations
 import json
 from typing import Optional
 from config.settings import GROQ_API_KEY, GROQ_LLM_MODEL, GROQ_STT_MODEL, DEMO_MODE
-from .prompts import TRIAGE_PROMPT, SUMMARY_PROMPT, COPILOT_PROMPT, REPORT_PROMPT, TRANSLATE_PROMPT
+from .prompts import (TRIAGE_PROMPT, SUMMARY_PROMPT, COPILOT_PROMPT, REPORT_PROMPT,
+                      TRANSLATE_PROMPT, EMERGENCY_CHECK_PROMPT)
 
 try:
     from groq import Groq
@@ -13,7 +14,7 @@ class GroqAI:
     def __init__(self):
         self.enabled = bool(GROQ_API_KEY and Groq)
         self.demo_mode = DEMO_MODE or not self.enabled
-        self.client = Groq(api_key=GROQ_API_KEY) if self.enabled else None
+        self.client = Groq(api_key=GROQ_API_KEY, timeout=15.0) if self.enabled else None
 
     def _chat(self, system: str, user: str) -> str:
         if not self.enabled:
@@ -26,15 +27,8 @@ class GroqAI:
         return response.choices[0].message.content
 
     def _demo(self, user: str) -> str:
-        u = user.lower()
-        if any(x in u for x in ["chest pain","difficulty breathing","unconscious","severe bleeding"]):
-            return json.dumps({
-                "urgency":"emergency",
-                "risk_flags":["Potential emergency warning sign"],
-                "missing_questions":[],
-                "safe_next_step":"Seek emergency medical care immediately.",
-                "patient_explanation":"This may be an emergency. Do not delay professional care."
-            })
+        # Offline placeholder. Emergency screening happens in ai/safety.py before
+        # this is called, so the demo response does not try to re-detect emergencies.
         return json.dumps({
             "urgency":"same_day",
             "risk_flags":["Assessment needed"],
@@ -42,6 +36,20 @@ class GroqAI:
             "safe_next_step":"Arrange a same-day clinical assessment if symptoms persist or worsen.",
             "patient_explanation":"A clinician should review the symptoms, especially if they are worsening."
         })
+
+    def classify_emergency(self, text: str) -> Optional[dict]:
+        """Second-line emergency check. Returns None when the LLM is unavailable,
+        so the caller falls back to the deterministic rules instead of guessing."""
+        if not self.enabled:
+            return None
+        response = self.client.chat.completions.create(
+            model=GROQ_LLM_MODEL,
+            messages=[{"role": "system", "content": EMERGENCY_CHECK_PROMPT},
+                      {"role": "user", "content": text}],
+            temperature=0,
+            response_format={"type": "json_object"},
+        )
+        return parse_emergency_verdict(response.choices[0].message.content)
 
     def triage(self, case: dict) -> str:
         return self._chat(TRIAGE_PROMPT, json.dumps(case, ensure_ascii=False, indent=2))
@@ -67,3 +75,14 @@ class GroqAI:
                 language=language if language else None, response_format="text"
             )
         return str(result)
+
+
+def parse_emergency_verdict(raw: str) -> Optional[dict]:
+    """Accept only a well-formed verdict; anything else counts as no answer."""
+    try:
+        data = json.loads(raw)
+    except (TypeError, ValueError):
+        return None
+    if not isinstance(data, dict) or not isinstance(data.get("emergency"), bool):
+        return None
+    return {"emergency": data["emergency"], "reason": str(data.get("reason", ""))}

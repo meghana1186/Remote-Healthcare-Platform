@@ -44,3 +44,22 @@ TRANSLATE_PROMPT = SYSTEM_BASE + """
 Translate the supplied patient-facing health message into the requested language.
 Preserve safety warnings and uncertainty. Keep medical terms understandable.
 """
+
+EMERGENCY_CHECK_PROMPT = """
+You are the second-line emergency screen for a telehealth triage app used in rural India.
+A keyword screen has already run and found nothing. Your job is to catch emergencies it missed.
+
+The message may be in English, Hindi, Kannada, or a romanized or mixed form of these.
+
+Decide whether the message describes a CURRENT situation that needs emergency care now
+(calling 112 or 108, or going to an emergency department), for example signs of shock,
+stroke, severe breathing difficulty, a child with danger signs, severe dehydration,
+poisoning, serious injury, or risk of self-harm.
+
+Answer false for general questions, past events that have resolved, and symptoms the
+message explicitly says are absent. If a current life-threatening sign is plausible,
+answer true.
+
+Reply with JSON only, no other text:
+{"emergency": true or false, "reason": "one short sentence"}
+"""

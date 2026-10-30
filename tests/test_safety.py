@@ -88,3 +88,50 @@ def test_safety_gate_keeps_old_shape():
 def test_self_harm_gets_helpline_message():
     r = safety_gate("he keeps saying he wants to kill himself")
     assert "14416" in r["message"]
+
+
+# LLM second check. The LLM is injected so these run offline.
+from ai.groq_client import parse_emergency_verdict
+from ai.safety import assess_emergency
+
+
+def test_llm_not_called_when_rules_already_flag():
+    calls = []
+    r = assess_emergency("crushing chest pain", llm_check=lambda t: calls.append(t))
+    assert r["emergency"] and r["decided_by"] == "rules"
+    assert calls == []
+
+
+def test_llm_can_escalate_a_rules_miss():
+    r = assess_emergency("my mother looks grey, cold and clammy",
+                         llm_check=lambda t: {"emergency": True, "reason": "possible shock"})
+    assert r["emergency"] and r["decided_by"] == "llm"
+    assert r["llm_reason"] == "possible shock"
+
+
+def test_llm_cannot_clear_a_rules_flag():
+    r = assess_emergency("I can't breathe", llm_check=lambda t: {"emergency": False, "reason": "fine"})
+    assert r["emergency"]
+
+
+def test_llm_failure_falls_back_to_rules():
+    def boom(_):
+        raise TimeoutError
+    r = assess_emergency("mild headache", llm_check=boom)
+    assert r["emergency"] is False and r["llm_checked"] is False
+
+
+def test_llm_disabled_returns_rules_result():
+    r = assess_emergency("mild headache", llm_check=lambda t: None)
+    assert r["emergency"] is False and r["llm_checked"] is False
+
+
+@pytest.mark.parametrize("raw,expected", [
+    ('{"emergency": true, "reason": "stroke signs"}', True),
+    ('{"emergency": false, "reason": "minor"}', False),
+    ('{"emergency": "yes"}', None),
+    ("not json", None),
+])
+def test_parse_emergency_verdict(raw, expected):
+    v = parse_emergency_verdict(raw)
+    assert (v["emergency"] if v else None) == expected
