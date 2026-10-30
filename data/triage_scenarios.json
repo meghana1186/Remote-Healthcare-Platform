@@ -1,0 +1,5 @@
+[
+{"name":"Fever and vomiting","case":{"age":37,"sex":"Female","symptoms":"fever for 3 days, vomiting twice, reduced appetite","duration":"3 days"},"expected":"same_day"},
+{"name":"Potential emergency","case":{"age":62,"sex":"Male","symptoms":"chest pain and sweating","duration":"30 minutes"},"expected":"emergency"},
+{"name":"Child fever","case":{"age":2,"sex":"Male","symptoms":"fever since yesterday, drinking normally","duration":"1 day"},"expected":"same_day"}
+]

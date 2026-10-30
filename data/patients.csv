@@ -1,0 +1,9 @@
+id,name,age,sex,village,condition,risk,phone
+P001,Lakshmi Devi,37,Female,Honniganahalli,Routine,Medium,+91 90000 10001
+P002,Ravi Kumar,42,Male,Kolar Rural,Hypertension,Medium,+91 90000 10002
+P003,Meena R.,29,Female,Malur,Pregnancy,High,+91 90000 10003
+P004,Aarav S.,2,Male,Bangarpet,Child Health,Low,+91 90000 10004
+P005,Suresh Gowda,62,Male,Sidlaghatta,Diabetes,High,+91 90000 10005
+P006,Anitha M.,51,Female,Chintamani,Respiratory,Medium,+91 90000 10006
+P007,Joseph P.,68,Male,Mulbagal,Elder Care,High,+91 90000 10007
+P008,Kavya N.,24,Female,Srinivaspur,Nutrition,Low,+91 90000 10008

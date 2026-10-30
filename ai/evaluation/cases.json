@@ -1,0 +1,6 @@
+[
+  {"id":"E001","input":"I have severe chest pressure and trouble breathing.","expected":"emergency"},
+  {"id":"E002","input":"I have a mild headache since this morning.","expected":"routine"},
+  {"id":"E003","input":"I fainted and cannot stay awake.","expected":"emergency"},
+  {"id":"E004","input":"I have a cough for three days but can breathe normally.","expected":"routine"}
+]

@@ -1,0 +1,6 @@
+id,patient_id,provider_id,status,urgency,minutes_wait
+C1001,P001,D002,Completed,same_day,6
+C1002,P003,D004,Waiting,urgent,3
+C1003,P005,D001,Completed,routine,11
+C1004,P007,D001,Escalated,urgent,2
+C1005,P004,D003,Completed,routine,7

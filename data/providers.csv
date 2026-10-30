@@ -1,0 +1,5 @@
+id,name,specialty,facility,distance_km,status
+D001,Dr. Asha Rao,General Medicine,Kolar District Hospital,18.4,Available
+D002,Dr. Vivek Sharma,Family Medicine,Malur CHC,8.2,Available
+D003,Dr. Farah Khan,Pediatrics,Bangarpet PHC,11.7,Busy
+D004,Dr. Nikhil Iyer,Obstetrics,Kolar Women & Child Centre,21.3,Available

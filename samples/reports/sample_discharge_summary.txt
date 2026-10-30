@@ -1,0 +1,5 @@
+DEMO DISCHARGE SUMMARY
+Reason for visit: Fever and dehydration symptoms
+Clinical course: Improved oral intake after observation
+Follow-up: Primary care review recommended
+Note: Synthetic demonstration document.
