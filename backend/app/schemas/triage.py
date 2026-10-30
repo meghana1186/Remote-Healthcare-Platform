@@ -14,3 +14,4 @@ class TriageResponse(BaseModel):
     safety_flags: list[str]
     source_count: int = 0
     sources: list[str] = []
+    screen_note: str = ""

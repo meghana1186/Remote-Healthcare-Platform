@@ -118,3 +118,10 @@ def test_triage_survives_retrieval_failure(monkeypatch):
     monkeypatch.setattr(rag, "_default_index", broken_index)
     hits, status = rag.retrieve("fever")
     assert hits == [] and status.startswith("unavailable")
+
+
+def test_screen_note_for_languages_the_rules_do_not_cover(monkeypatch):
+    monkeypatch.setattr(triage, "retrieve", lambda q, k=3: ([], "ok"))
+    r = triage.triage_text("மார்பு வலி", language="Tamil")   # chest pain, in Tamil
+    assert "not Tamil" in r["screen_note"] and "112" in r["screen_note"]
+    assert triage.triage_text("mild cough", language="Hindi")["screen_note"] == ""

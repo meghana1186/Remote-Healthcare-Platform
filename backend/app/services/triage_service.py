@@ -14,4 +14,5 @@ def run_triage(req: TriageRequest) -> TriageResponse:
         safety_flags=result.get("risk_flags", []),
         source_count=len(result.get("retrieved", [])),
         sources=result.get("sources", []),
+        screen_note=result.get("screen_note", ""),
     )

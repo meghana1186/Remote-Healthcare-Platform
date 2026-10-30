@@ -11,10 +11,20 @@ import json
 
 from .groq_client import GroqAI
 from .rag import retrieve
-from .safety import assess_emergency
+from .safety import assess_emergency, rules_cover
 
 
-def _normalize(raw: dict, safety: dict, retrieved: list[dict], retrieval_status: str) -> dict:
+def _screen_note(language: str, safety: dict) -> str:
+    """Tell the user when the keyword rules could not read their language."""
+    if rules_cover(language) or safety.get("decided_by") == "rules":
+        return ""
+    llm = "checked it" if safety.get("llm_checked") else "was unavailable, so nothing screened it"
+    return (f"The emergency keyword rules cover English, Hindi and Kannada, not {language}. "
+            f"The LLM emergency check {llm}. If anyone may be in danger, call 112 or 108.")
+
+
+def _normalize(raw: dict, safety: dict, retrieved: list[dict], retrieval_status: str,
+               language: str = "English") -> dict:
     retrieved_topics = {d["topic"] for d in retrieved}
     cited = [s for s in (raw.get("sources") or []) if s in retrieved_topics]
     return {
@@ -28,6 +38,7 @@ def _normalize(raw: dict, safety: dict, retrieved: list[dict], retrieval_status:
         "sources": cited,
         "retrieved": [{k: d[k] for k in ("id", "topic", "source", "score")} for d in retrieved],
         "retrieval_status": retrieval_status,
+        "screen_note": _screen_note(language, safety),
     }
 
 
@@ -40,7 +51,7 @@ def triage_text(message: str, language: str = "English") -> dict:
             "missing_questions": [],
             "safe_next_step": safety["message"],
             "patient_explanation": "A potential emergency warning sign was detected.",
-        }, safety, [], "skipped: emergency")
+        }, safety, [], "skipped: emergency", language)
 
     retrieved, status = retrieve(message, k=3)
     raw = GroqAI().triage({
@@ -60,9 +71,9 @@ def triage_text(message: str, language: str = "English") -> dict:
             "patient_explanation": "Please arrange professional assessment.",
         }
     # The model can also escalate; it is never allowed to downgrade the screen.
-    return _normalize(parsed, safety, retrieved, status)
+    return _normalize(parsed, safety, retrieved, status, language)
 
 
-def run_triage(case: dict) -> dict:
+def run_triage(case: dict, language: str = "English") -> dict:
     text = " ".join(str(v) for v in case.values())
-    return triage_text(text)
+    return triage_text(text, language=language)

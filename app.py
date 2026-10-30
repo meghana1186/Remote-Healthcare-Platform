@@ -5,6 +5,7 @@ import streamlit as st
 from config.settings import APP_NAME, APP_VERSION
 from ai.groq_client import GroqAI
 from ai.triage import run_triage
+from ai.safety import rules_cover
 from components.ui import metric_card, section_title
 from services.data_service import patients, providers, consultations, health_workers
 from services.metrics import compute_metrics
@@ -19,7 +20,8 @@ with st.sidebar:
         "Dashboard","AI Triage","Emergency Mode","Doctor Console","Health Worker",
         "Patient Record","Report Analyzer","Health Copilot","Referrals & Providers",
         "Campaigns","Impact Analytics"])
-    language=st.selectbox("🌐 Language",["English","ಕನ್ನಡ","हिन्दी","தமிழ்","తెలుగు","मराठी"])
+    LANGUAGES={"English":"English","ಕನ್ನಡ":"Kannada","हिन्दी":"Hindi","தமிழ்":"Tamil","తెలుగు":"Telugu","मराठी":"Marathi"}
+    language=LANGUAGES[st.selectbox("🌐 Language",list(LANGUAGES))]
     if st.toggle("📶 Low-bandwidth mode"):
         st.markdown('<div class="low-bandwidth">Low-bandwidth mode active</div>',unsafe_allow_html=True)
 
@@ -42,13 +44,17 @@ if page=="Dashboard":
 
 elif page=="AI Triage":
     section_title("AI Triage Copilot","AI assists with triage; clinicians remain responsible for care decisions.")
+    if not rules_cover(language):
+        st.warning(f"The emergency keyword rules cover English, Hindi and Kannada. For {language}, "
+                   "emergencies are screened by the LLM check only, which needs a Groq API key.")
     with st.form("triage"):
         age=st.number_input("Age",0,120,37); sex=st.selectbox("Sex",["Female","Male","Other / prefer not to say"])
         symptoms=st.text_area("Describe what is happening",placeholder="Example: fever for 3 days, vomiting twice, reduced appetite")
         duration=st.text_input("Duration","3 days")
         go=st.form_submit_button("Run safety-first triage",type="primary")
     if go:
-        r=run_triage({"age":age,"sex":sex,"symptoms":symptoms,"duration":duration})
+        r=run_triage({"age":age,"sex":sex,"symptoms":symptoms,"duration":duration},language)
+        if r.get("screen_note"): st.warning(r["screen_note"])
         st.markdown(f"### Urgency: `{r.get('urgency','unknown').upper()}`")
         if r.get("emergency"): st.error(r.get("clinician_handoff",""))
         if r.get("risk_flags"): st.write("**Risk flags:**",", ".join(r["risk_flags"]))
