@@ -7,6 +7,7 @@ from ai.groq_client import GroqAI
 from ai.triage import run_triage
 from components.ui import metric_card, section_title
 from services.data_service import patients, providers, consultations, health_workers
+from services.metrics import compute_metrics
 
 st.set_page_config(page_title=APP_NAME,page_icon="🏥",layout="wide")
 st.markdown(f"<style>{Path('assets/css/app.css').read_text()}</style>",unsafe_allow_html=True)
@@ -24,9 +25,14 @@ with st.sidebar:
 
 if page=="Dashboard":
     st.markdown('<div class="hero"><h1>Good evening 👋</h1><p>AI-assisted healthcare access for underserved communities.</p></div>',unsafe_allow_html=True)
+    m=compute_metrics()
     cols=st.columns(4)
-    for col,label,value,cap in zip(cols,["Patients served","AI assessments","Avg response","Villages covered"],["1,024","786","8 min","42"],["+18% this month","24 active today","Target < 10 min","6 districts"]):
+    for col,label,value,cap in zip(cols,
+        ["Patients","Consultations","Avg wait","Villages"],
+        [m["patients"],m["consultations"],f"{m['avg_wait_minutes']} min",m["villages"]],
+        [f"{m['high_risk_patients']} high-risk",f"{m['consultations_waiting']} waiting now","across consultations",f"{m['health_workers']} health workers"]):
         with col: metric_card(label,value,cap)
+    st.caption("Computed from the synthetic seed data in data/.")
     section_title("Care at a glance","Move from patient concern to appropriate human care.")
     a,b,c,d=st.columns(4)
     with a: st.markdown("### 🩺 AI Triage"); st.write("Safety-first symptom intake and next-step guidance.")
@@ -118,11 +124,14 @@ elif page=="Campaigns":
     st.dataframe(pd.DataFrame(json.loads(Path("data/campaigns.json").read_text())),use_container_width=True,hide_index=True)
 
 elif page=="Impact Analytics":
-    section_title("Impact Analytics","Synthetic demo metrics.")
+    section_title("Impact Analytics","Computed from the synthetic seed data in data/.")
+    m=compute_metrics()
     cols=st.columns(4)
-    for col,label,value in zip(cols,["Patients reached","Consultations","Referrals","Emergency escalations"],["1,024","432","217","39"]):
+    for col,label,value in zip(cols,["Patients","Consultations completed","Escalations","Home visits today"],
+                               [m["patients"],f"{m['consultations_completed']} of {m['consultations']}",m["escalations"],m["home_visits_today"]]):
         with col: metric_card(label,value)
-    st.bar_chart(pd.DataFrame({"Care type":["Fever","Respiratory","Pregnancy","Chronic","Injury"],"Cases":[310,190,125,240,72]}).set_index("Care type"))
+    st.write(f"Campaign households visited: {m['households_visited']:,} of {m['households_targeted']:,}")
+    st.bar_chart(pd.DataFrame({"Condition":list(m["patients_by_condition"]),"Patients":list(m["patients_by_condition"].values())}).set_index("Condition"))
 
 st.divider()
 st.caption("RemoteCare AI is a hackathon prototype. Synthetic data only. AI outputs are not medical diagnoses or prescriptions.")

@@ -7,7 +7,7 @@ import {
   Stethoscope, Users, X, Search, Video, MapPin, Upload, Send,
   BarChart3, ClipboardList, UserRound, LogOut, Wifi, RefreshCw
 } from "lucide-react";
-import { runTriage, getPatients, getProviders } from "../lib/api";
+import { runTriage, getPatients, getProviders, getMetrics } from "../lib/api";
 
 type View = "Overview" | "AI Triage" | "Appointments" | "Health Record" | "Care Team" | "Referrals" | "Impact";
 
@@ -131,7 +131,21 @@ function CareTeam(){ const [people,setPeople]=useState<any[]>([]); useEffect(()=
 
 function Referrals(){return <><PageTitle kicker="CARE COORDINATION" title="Referrals" desc="Track recommended facilities and the status of your care handoffs."/><div className="glass-card list-card"><div className="list-head"><h3>Active referrals</h3><span className="confirmed">2 OPEN</span></div><Referral facility="District Community Health Centre" specialty="General medicine" status="Awaiting appointment" distance="4.8 km"/><Referral facility="Primary Care Clinic" specialty="Diagnostics" status="Referral sent" distance="7.2 km"/></div></>}
 
-function Impact(){return <><PageTitle kicker="SYSTEM INSIGHTS" title="Impact analytics" desc="A demo view of operational signals for a community-health program."/><div className="metric-grid"><Metric label="Patients supported" value="1,248" note="+18% this month" icon={<Users size={18}/>}/><Metric label="Clinician handoffs" value="326" note="92% completed" icon={<Stethoscope size={18}/>}/><Metric label="Urgent escalations" value="41" note="Safety engine triggered" icon={<ShieldCheck size={18}/>}/></div><div className="glass-card chart-card"><div className="card-head"><div><span className="section-kicker">CARE VOLUME</span><h3>12-week activity</h3></div><span className="muted">Synthetic demo data</span></div><div className="bars">{[42,56,48,70,63,78,72,88,75,91,86,96].map((v,i)=><div key={i} className="bar-col"><div className="bar" style={{height:`${v}%`}}/><span>W{i+1}</span></div>)}</div></div></>}
+function Impact(){
+  const [m,setM]=useState<any>(null); const [error,setError]=useState(false);
+  useEffect(()=>{getMetrics().then(setM).catch(()=>setError(true))},[]);
+  const head=<PageTitle kicker="SYSTEM INSIGHTS" title="Impact analytics" desc="Computed from the synthetic seed data served by the API."/>;
+  if(error) return <>{head}<EmptyState title="API connection needed" text="Start FastAPI on port 8000 to load metrics."/></>;
+  if(!m) return <>{head}<EmptyState title="Loading" text="Fetching metrics from the API."/></>;
+  const urgency=Object.entries(m.consultations_by_urgency as Record<string,number>);
+  const max=Math.max(1,...urgency.map(([,v])=>v));
+  return <>{head}<div className="metric-grid">
+    <Metric label="Patients" value={String(m.patients)} note={`${m.high_risk_patients} high-risk · ${m.villages} villages`} icon={<Users size={18}/>}/>
+    <Metric label="Consultations" value={String(m.consultations)} note={`${m.consultations_completed} completed · avg wait ${m.avg_wait_minutes} min`} icon={<Stethoscope size={18}/>}/>
+    <Metric label="Escalations" value={String(m.escalations)} note={`${m.home_visits_today} home visits today`} icon={<ShieldCheck size={18}/>}/>
+  </div><div className="glass-card chart-card"><div className="card-head"><div><span className="section-kicker">CONSULTATIONS</span><h3>By urgency</h3></div><span className="muted">Synthetic seed data</span></div>
+  <div className="bars">{urgency.map(([k,v])=><div key={k} className="bar-col"><div className="bar" style={{height:`${(v/max)*100}%`}}/><span>{k}</span></div>)}</div></div></>;
+}
 
 function PageTitle({kicker,title,desc}:{kicker:string;title:string;desc:string}){return <div className="page-title"><span className="section-kicker">{kicker}</span><h1>{title}</h1><p>{desc}</p></div>}
 function EmptyState({title,text}:{title:string;text:string}){return <div className="empty"><div className="soft-icon"><Activity size={18}/></div><strong>{title}</strong><span>{text}</span></div>}

@@ -16,4 +16,5 @@ export async function runTriage(message: string, language = "English") {
 
 export async function getPatients() { return request("/demo/patients"); }
 export async function getProviders() { return request("/demo/providers"); }
+export async function getMetrics() { return request("/demo/metrics"); }
 export async function getHealth() { return request("/status"); }
