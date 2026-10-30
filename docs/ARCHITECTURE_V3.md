@@ -1,5 +1,7 @@
 # RemoteCare AI 3.0 Architecture
 
+This describes the target design. For what is built today and what is still a stub (auth, audit logging, notifications), see "Not built yet" in the README.
+
 ## Core flow
 
 Patient voice/text -> safety checks -> triage -> retrieval -> Groq -> structured handoff -> clinician review -> referral/follow-up.

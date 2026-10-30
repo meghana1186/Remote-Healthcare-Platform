@@ -3,8 +3,9 @@
 ## Fastest local demo
 
 ### Backend
-cd backend
-python -m pip install -r requirements.txt
+From the repository root (not from inside backend/):
+
+python -m pip install -r backend/requirements.txt
 uvicorn backend.app.main:app --reload --port 8000
 
 ### Frontend
