@@ -1,36 +1,36 @@
 {
   "mode": "rules",
   "overall": {
-    "cases": 85,
-    "tp": 49,
-    "fp": 2,
+    "cases": 94,
+    "tp": 54,
+    "fp": 1,
     "fn": 3,
-    "tn": 31,
-    "precision": 0.961,
-    "recall": 0.942,
-    "f1": 0.951,
-    "specificity": 0.939,
-    "accuracy": 0.941
+    "tn": 36,
+    "precision": 0.982,
+    "recall": 0.947,
+    "f1": 0.964,
+    "specificity": 0.973,
+    "accuracy": 0.957
   },
   "by_language": {
     "en": {
-      "cases": 53,
-      "tp": 30,
-      "fp": 2,
+      "cases": 60,
+      "tp": 35,
+      "fp": 1,
       "fn": 3,
-      "tn": 18,
-      "precision": 0.938,
-      "recall": 0.909,
-      "f1": 0.923,
-      "specificity": 0.9,
-      "accuracy": 0.906
+      "tn": 21,
+      "precision": 0.972,
+      "recall": 0.921,
+      "f1": 0.946,
+      "specificity": 0.955,
+      "accuracy": 0.933
     },
     "hi": {
-      "cases": 11,
+      "cases": 12,
       "tp": 7,
       "fp": 0,
       "fn": 0,
-      "tn": 4,
+      "tn": 5,
       "precision": 1.0,
       "recall": 1.0,
       "f1": 1.0,
@@ -50,11 +50,11 @@
       "accuracy": 1.0
     },
     "kn": {
-      "cases": 10,
+      "cases": 11,
       "tp": 6,
       "fp": 0,
       "fn": 0,
-      "tn": 4,
+      "tn": 5,
       "precision": 1.0,
       "recall": 1.0,
       "f1": 1.0,
@@ -98,19 +98,11 @@
       "error": "missed"
     },
     {
-      "id": "EN42",
+      "id": "EN60",
       "lang": "en",
-      "input": "What are the warning signs of a heart attack?",
+      "input": "Is chest pain always a heart attack? Just curious for my exam.",
       "flags": [
-        "heart attack"
-      ],
-      "error": "false_alarm"
-    },
-    {
-      "id": "EN43",
-      "lang": "en",
-      "input": "My neighbour died of a heart attack last year and I'm worried.",
-      "flags": [
+        "chest pain",
         "heart attack"
       ],
       "error": "false_alarm"

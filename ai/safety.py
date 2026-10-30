@@ -110,7 +110,7 @@ RULES: list[Rule] = [
     _en("injury", r"fell (?:off|from) (?:a |the )?(?:height|tree|roof|terrace|building|ladder|bike)"),
     _en("injury", r"hit by (?:a |the )?(?:car|bus|truck|lorry|vehicle|bike|tractor)|road accident"),
     _en("injury", r"head injury|hit (?:his|her|my) head|bone (?:is )?(?:sticking|poking) out|deep (?:cut|wound)"),
-    _en("bite_sting", r"snake ?bite|bitten by (?:a )?snake|snake (?:has )?bit|scorpion sting|stung by (?:a )?scorpion"),
+    _en("bite_sting", r"snake ?bites?|bitten by (?:a )?snake|snake (?:has |just |had )?(?:bit|bitten)|scorpion sting|stung by (?:a )?scorpion"),
     _en("allergy", r"anaphyla\w*|throat (?:is )?(?:closing|swelling|swollen)"),
     _en("allergy", r"(?:face|lips|lip|tongue|throat)(?: and (?:face|lips|lip|tongue|throat))? (?:is |are )?(?:swelling|swollen)|swelling of (?:the )?(?:face|lips|tongue|throat)"),
     _en("heat", r"heat ?stroke"),
@@ -198,6 +198,25 @@ NEGATION_AFTER = re.compile(r"^\s*(?:है\s+)?(?:नहीं|नही|nahi|n
 CLAUSE_BREAK = re.compile(r"[.,;!?\n]|\b(?:but|however|though|although|except|and now|now)\b|लेकिन|पर |ಆದರೆ")
 
 
+# Past events, and events that happened to someone else and are over.
+HISTORY_CUE = re.compile(
+    r"\b(?:last year|years ago|long ago|in the past|history of|used to (?:have|get)|"
+    r"as a (?:child|kid)|in (?:my |his |her )?childhood|died (?:of|from|due to)|passed away)\b"
+    r"|पिछले साल|साल पहले|ಕಳೆದ ವರ್ಷ|pichh?le saal"
+)
+# Words that make a symptom current again even when a history cue is present.
+ONGOING_CUE = re.compile(r"\b(?:since|started|still|again|today|right now|currently|worse|worsening)\b")
+# General questions about a condition, as opposed to reports of one.
+EDUCATION_QUESTION = re.compile(
+    r"^\s*(?:what|which|how|why|when)\b[^.!?]*\b(?:signs?|symptoms?|causes?|prevent\w*|risk factors?)\b"
+)
+# Anything that suggests someone has the symptom now.
+PRESENT_CUE = re.compile(
+    r"\b(?:i have|i am|im|i feel|i got|my \w+(?: \w+)? (?:has|is|have|got)|he is|she is|hes|shes|"
+    r"he has|she has|right now|currently)\b"
+)
+
+
 def normalize(text: str) -> str:
     """Lowercase, unify apostrophes and Indic spelling variants, collapse spaces."""
     t = unicodedata.normalize("NFKC", text or "").lower()
@@ -214,6 +233,30 @@ def _clause_before(text: str, start: int) -> str:
         prefix = prefix[breaks[-1].end():]
     words = prefix.split()
     return " ".join(words[-5:])
+
+
+def _clause_around(text: str, start: int, end: int) -> str:
+    before = list(CLAUSE_BREAK.finditer(text[:start]))
+    left = before[-1].end() if before else 0
+    after = CLAUSE_BREAK.search(text, end)
+    right = after.start() if after else len(text)
+    return text[left:right]
+
+
+def _is_historical(text: str, match: re.Match) -> bool:
+    clause = _clause_around(text, match.start(), match.end())
+    return bool(HISTORY_CUE.search(clause)) and not ONGOING_CUE.search(clause)
+
+
+def _education_question_end(text: str) -> int:
+    """If the message opens with a general question and nobody is described as
+    having symptoms, return where that question ends; otherwise 0."""
+    if not EDUCATION_QUESTION.search(text) or PRESENT_CUE.search(text):
+        return 0
+    # Only the opening question is ignored; anything after the first clause break
+    # ("what are the signs of poisoning, he drank pesticide") is still screened.
+    brk = CLAUSE_BREAK.search(text)
+    return brk.start() if brk else len(text)
 
 
 def _is_negated(text: str, match: re.Match, rule: Rule) -> bool:
@@ -234,12 +277,14 @@ class ScreenResult:
     categories: list[str] = field(default_factory=list)
     negated: list[str] = field(default_factory=list)
     languages: list[str] = field(default_factory=list)
+    ignored: list[str] = field(default_factory=list)   # past events and general questions
 
 
 def screen(text: str) -> ScreenResult:
     """Run the deterministic rules only."""
     t = normalize(text)
-    flags, categories, negated, langs = [], [], [], []
+    question_end = _education_question_end(t)
+    flags, categories, negated, langs, ignored = [], [], [], [], []
     for rule, rx, reqs in _COMPILED:
         if reqs and not all(req.search(t) for req in reqs):
             continue
@@ -249,13 +294,17 @@ def screen(text: str) -> ScreenResult:
                 if phrase not in negated:
                     negated.append(phrase)
                 continue
+            if m.start() < question_end or _is_historical(t, m):
+                if phrase not in ignored:
+                    ignored.append(phrase)
+                continue
             if phrase not in flags:
                 flags.append(phrase)
             if rule.category not in categories:
                 categories.append(rule.category)
             if rule.lang not in langs:
                 langs.append(rule.lang)
-    return ScreenResult(bool(flags), flags, categories, negated, langs)
+    return ScreenResult(bool(flags), flags, categories, negated, langs, ignored)
 
 
 def emergency_message(categories: list[str]) -> str:
@@ -280,6 +329,7 @@ def assess_emergency(text: str, use_llm: bool = True, llm_check: Optional[LLMChe
         "flags": result.flags,
         "categories": result.categories,
         "negated": result.negated,
+        "ignored": result.ignored,
         "decided_by": "rules" if result.emergency else "none",
         "llm_checked": False,
         "llm_reason": "",
@@ -306,6 +356,14 @@ def assess_emergency(text: str, use_llm: bool = True, llm_check: Optional[LLMChe
             message=EMERGENCY_MESSAGE,
         )
     return out
+
+
+# Languages the deterministic rules cover. Anything else relies on the LLM check alone.
+RULE_LANGUAGES = {"English", "Hindi", "Kannada"}
+
+
+def rules_cover(language: str) -> bool:
+    return language in RULE_LANGUAGES
 
 
 # Backward-compatible helpers used elsewhere in the codebase.

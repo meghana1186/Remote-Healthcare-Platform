@@ -135,3 +135,34 @@ def test_llm_disabled_returns_rules_result():
 def test_parse_emergency_verdict(raw, expected):
     v = parse_emergency_verdict(raw)
     assert (v["emergency"] if v else None) == expected
+
+
+# Past events and general questions
+@pytest.mark.parametrize("text", [
+    "What are the warning signs of a heart attack?",
+    "My neighbour died of a heart attack last year and I'm worried.",
+    "I had a seizure as a child, none since then.",
+    "पिछले साल दिल का दौरा पड़ा था, अब ठीक हूं।",
+    "ಕಳೆದ ವರ್ಷ ಹಾವು ಕಚ್ಚಿತ್ತು, ಈಗ ಆರಾಮ ಇದ್ದೇನೆ.",
+])
+def test_past_events_and_general_questions_are_not_flagged(text):
+    r = screen(text)
+    assert not r.emergency
+    assert r.ignored
+
+
+@pytest.mark.parametrize("text", [
+    "Chest pain since last year, much worse today",
+    "My father died of a heart attack, and now I have chest pain too.",
+    "What are the symptoms of a stroke? My mother's face is drooping.",
+    "What are the symptoms of poisoning, he drank pesticide",
+    "How do I prevent snake bites? A snake just bit my son",
+])
+def test_current_symptoms_still_flag_next_to_history_or_questions(text):
+    assert screen(text).emergency
+
+
+def test_rule_language_coverage():
+    from ai.safety import rules_cover
+    assert rules_cover("Hindi") and rules_cover("Kannada") and rules_cover("English")
+    assert not rules_cover("Tamil")
