@@ -1,38 +1,23 @@
-# RemoteCare AI 3.0
+# Remote Healthcare Platform
+### AI-Powered Telemedicine Platform for Underserved Communities
+Remote Healthcare Platform is a full-stack AI-assisted telemedicine solution designed to improve access to healthcare in rural and underserved communities.
+The platform connects patients, healthcare providers, and community health workers through intelligent triage, referrals, health records, and low-bandwidth-friendly workflows.
 
-RemoteCare AI is a full-stack, AI-assisted telemedicine prototype for rural and underserved communities.
+## Key Features
+- **AI Triage Copilot** — analyzes patient-reported symptoms and generates structured triage assessments.
+- **Emergency Safety Layer** — prioritizes potential emergency situations before normal AI processing.
+- **Clinician Handoff** — converts patient conversations into concise, structured summaries for healthcare professionals.
+- **AI Report Analysis** — extracts and summarizes information from medical reports.
+- **Provider & Referral Network** — supports matching patients with appropriate healthcare services.
+- **Voice Input** — integrates Groq Whisper for speech-to-text workflows.
+- **Health Records** — maintains structured patient and consultation information.
+- **Community Health Worker Support** — enables assisted healthcare workflows for underserved populations.
+- **Impact Dashboard** — tracks healthcare access, referrals, consultations, and community activity.
+- **RAG Foundation** — supports grounded responses using curated healthcare knowledge sources.
 
-## Product
-
-- Patient-first, low-bandwidth UX
-- AI-assisted triage with deterministic emergency safety checks
-- Groq LLM integration
-- Groq Whisper speech-to-text
-- Clinician-ready handoff summaries
-- RAG-ready governed knowledge layer
-- PostgreSQL data model
-- FastAPI backend
-- Redis/Celery background-job foundation
-- Role-based architecture
-- Audit logging and consent model
-- AI evaluation suite
-- Docker Compose local environment
-- Premium glassmorphism frontend with no emoji-based UI
-
-## Run
-
-### Full stack
-1. Copy `.env.example` to `.env` and add a Groq key if desired.
-2. Run `docker compose up --build`.
-3. Web app: http://localhost:3000
-4. API: http://localhost:8000
-5. API docs: http://localhost:8000/docs
-
-### Existing Streamlit demo
-The original Streamlit demo remains available in `app.py`.
-
-## Safety
-
-RemoteCare is a hackathon/portfolio prototype, not a medical device or production clinical system. The AI is designed to assist intake and clinician handoff; it does not autonomously diagnose or prescribe.
-
-Before production use, add clinical validation, formal threat modeling, managed secrets, real identity verification, consent management, encryption/key management, verified provider/facility integrations, observability, backup/restore, governance, and jurisdiction-specific healthcare compliance.
+## Tech Stack
+**Frontend:** Next.js, React, TypeScript, CSS, Lucide React
+**Backend:** FastAPI, Python, SQLAlchemy, PostgreSQL
+**AI:** Groq API, LLMs, Whisper Speech-to-Text, RAG, AI Safety Layer
+**Infrastructure:** Docker, Docker Compose, Redis, Celery
+**Security:** JWT/RBAC foundation, environment-based secrets, audit logging
