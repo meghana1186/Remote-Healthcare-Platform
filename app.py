@@ -44,21 +44,36 @@ elif page=="AI Triage":
     if go:
         r=run_triage({"age":age,"sex":sex,"symptoms":symptoms,"duration":duration})
         st.markdown(f"### Urgency: `{r.get('urgency','unknown').upper()}`")
+        if r.get("emergency"): st.error(r.get("clinician_handoff",""))
         if r.get("risk_flags"): st.write("**Risk flags:**",", ".join(r["risk_flags"]))
-        st.info(r.get("safe_next_step","Arrange professional assessment."))
-        st.write("**Patient explanation**"); st.write(r.get("patient_explanation",""))
-        st.write("**Questions for next step**")
-        for q in r.get("missing_questions",[]): st.write("•",q)
-        st.caption("Not a diagnosis or prescription.")
+        if not r.get("emergency"): st.info(r.get("clinician_handoff") or "Arrange professional assessment.")
+        st.write("**Patient explanation**"); st.write(r.get("summary",""))
+        if r.get("follow_up_questions"):
+            st.write("**Questions for next step**")
+            for q in r["follow_up_questions"]: st.write("•",q)
+        if r.get("retrieved"):
+            with st.expander(f"Knowledge used ({len(r.get('sources',[]))} cited of {len(r['retrieved'])} retrieved)"):
+                for d in r["retrieved"]:
+                    mark="✓" if d["topic"] in r.get("sources",[]) else "·"
+                    st.write(f"{mark} {d['topic']} (score {d['score']}) — {d['source']}")
+        elif r.get("retrieval_status","").startswith("unavailable"):
+            st.caption(f"Knowledge retrieval {r['retrieval_status']}")
+        st.caption(f"Emergency screen decided by: {r.get('safety_decided_by','none')}. Not a diagnosis or prescription.")
 
 elif page=="Emergency Mode":
     section_title("🚨 Emergency Mode","If someone may be in immediate danger, seek emergency care now.")
-    options=st.multiselect("What is happening?",["Difficulty breathing","Chest pain","Unconscious","Severe bleeding","Seizure","Poisoning","Snake bite","Severe burn"])
+    guidance={g["id"]:g for g in json.loads(Path("knowledge/emergency_guidance.json").read_text(encoding="utf-8"))}
+    situations={"Difficulty breathing":"em-breathing","Chest pain":"em-chest-pain","Unconscious":"em-unconscious",
+                "Severe bleeding":"em-bleeding","Seizure":"em-seizure","Stroke signs":"em-stroke","Poisoning":"em-poisoning",
+                "Snake bite":"em-snakebite","Severe burn":"em-burns","Severe allergic reaction":"em-allergy"}
+    options=st.multiselect("What is happening?",list(situations))
     if options:
-        st.error("Potential emergency identified.")
-        for i,item in enumerate(options,1):
-            st.markdown(f"**STEP {i} — {item}**")
-            st.write("Stay with the person, keep them safe, and seek emergency medical care immediately.")
+        st.error("Potential emergency identified. Call 112, or 108 for an ambulance.")
+        for item in options:
+            g=guidance[situations[item]]
+            st.markdown(f"**{item}**")
+            for n,step in enumerate(g["steps"],1): st.write(f"{n}. {step}")
+            st.caption(f"Source: {g['source']}")
     st.warning("Do not delay emergency care while using this application.")
 
 elif page=="Doctor Console":
