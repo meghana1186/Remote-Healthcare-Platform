@@ -1,0 +1,119 @@
+{
+  "mode": "rules",
+  "overall": {
+    "cases": 85,
+    "tp": 49,
+    "fp": 2,
+    "fn": 3,
+    "tn": 31,
+    "precision": 0.961,
+    "recall": 0.942,
+    "f1": 0.951,
+    "specificity": 0.939,
+    "accuracy": 0.941
+  },
+  "by_language": {
+    "en": {
+      "cases": 53,
+      "tp": 30,
+      "fp": 2,
+      "fn": 3,
+      "tn": 18,
+      "precision": 0.938,
+      "recall": 0.909,
+      "f1": 0.923,
+      "specificity": 0.9,
+      "accuracy": 0.906
+    },
+    "hi": {
+      "cases": 11,
+      "tp": 7,
+      "fp": 0,
+      "fn": 0,
+      "tn": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "specificity": 1.0,
+      "accuracy": 1.0
+    },
+    "hi-latn": {
+      "cases": 7,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "tn": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "specificity": 1.0,
+      "accuracy": 1.0
+    },
+    "kn": {
+      "cases": 10,
+      "tp": 6,
+      "fp": 0,
+      "fn": 0,
+      "tn": 4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "specificity": 1.0,
+      "accuracy": 1.0
+    },
+    "kn-latn": {
+      "cases": 4,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0,
+      "tn": 2,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "specificity": 1.0,
+      "accuracy": 1.0
+    }
+  },
+  "llm_escalations": 0,
+  "errors": [
+    {
+      "id": "EN31",
+      "lang": "en",
+      "input": "My mother's lips look grey and she is very cold and clammy.",
+      "flags": [],
+      "error": "missed"
+    },
+    {
+      "id": "EN32",
+      "lang": "en",
+      "input": "He is breathing very fast and his chest is pulling in with each breath.",
+      "flags": [],
+      "error": "missed"
+    },
+    {
+      "id": "EN33",
+      "lang": "en",
+      "input": "She hasn't passed urine since yesterday and is very drowsy.",
+      "flags": [],
+      "error": "missed"
+    },
+    {
+      "id": "EN42",
+      "lang": "en",
+      "input": "What are the warning signs of a heart attack?",
+      "flags": [
+        "heart attack"
+      ],
+      "error": "false_alarm"
+    },
+    {
+      "id": "EN43",
+      "lang": "en",
+      "input": "My neighbour died of a heart attack last year and I'm worried.",
+      "flags": [
+        "heart attack"
+      ],
+      "error": "false_alarm"
+    }
+  ]
+}
