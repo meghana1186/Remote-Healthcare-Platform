@@ -10,7 +10,6 @@ COPY config /app/config
 COPY workers /app/workers
 COPY data /app/data
 COPY knowledge /app/knowledge
-COPY .env /app/.env
 
 ENV PYTHONPATH=/app
 ENV PYTHONDONTWRITEBYTECODE=1
